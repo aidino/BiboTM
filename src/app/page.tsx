@@ -316,8 +316,8 @@ const AgentStudioPage = () => {
     if (!inspectSidebarAgent) return null;
     const baseConfig =
       gatewayConfigSnapshot?.config &&
-      typeof gatewayConfigSnapshot.config === "object" &&
-      !Array.isArray(gatewayConfigSnapshot.config)
+        typeof gatewayConfigSnapshot.config === "object" &&
+        !Array.isArray(gatewayConfigSnapshot.config)
         ? (gatewayConfigSnapshot.config as Record<string, unknown>)
         : undefined;
     const list = readConfigAgentList(baseConfig);
@@ -339,8 +339,8 @@ const AgentStudioPage = () => {
     if (!inspectSidebarAgent) return undefined;
     const baseConfig =
       gatewayConfigSnapshot?.config &&
-      typeof gatewayConfigSnapshot.config === "object" &&
-      !Array.isArray(gatewayConfigSnapshot.config)
+        typeof gatewayConfigSnapshot.config === "object" &&
+        !Array.isArray(gatewayConfigSnapshot.config)
         ? (gatewayConfigSnapshot.config as Record<string, unknown>)
         : undefined;
     const list = readConfigAgentList(baseConfig);
@@ -355,8 +355,8 @@ const AgentStudioPage = () => {
   const settingsDefaultAgentId = useMemo(() => {
     const baseConfig =
       gatewayConfigSnapshot?.config &&
-      typeof gatewayConfigSnapshot.config === "object" &&
-      !Array.isArray(gatewayConfigSnapshot.config)
+        typeof gatewayConfigSnapshot.config === "object" &&
+        !Array.isArray(gatewayConfigSnapshot.config)
         ? (gatewayConfigSnapshot.config as Record<string, unknown>)
         : undefined;
     return resolveDefaultConfigAgentId(baseConfig);
@@ -554,7 +554,7 @@ const AgentStudioPage = () => {
   const restartingMutationBlock = settingsMutationController.restartingMutationBlock;
   const hasRestartBlockInProgress = Boolean(
     settingsMutationController.hasRestartBlockInProgress ||
-      (createAgentBlock && createAgentBlock.phase !== "queued")
+    (createAgentBlock && createAgentBlock.phase !== "queued")
   );
 
   const {
@@ -1235,15 +1235,15 @@ const AgentStudioPage = () => {
     ? createAgentBlock.phase === "queued"
       ? "Waiting for active runs to finish"
       : createAgentBlock.phase === "creating"
-      ? "Submitting config change"
-      : null
+        ? "Submitting config change"
+        : null
     : null;
   const restartingMutationStatusLine = resolveConfigMutationStatusLine({
     block: restartingMutationBlock
       ? {
-          phase: restartingMutationBlock.phase,
-          sawDisconnect: restartingMutationBlock.sawDisconnect,
-        }
+        phase: restartingMutationBlock.phase,
+        sawDisconnect: restartingMutationBlock.sawDisconnect,
+      }
       : null,
     status,
   });
@@ -1281,7 +1281,7 @@ const AgentStudioPage = () => {
         <div className="flex min-h-screen items-center justify-center px-6">
           <div className="glass-panel ui-panel w-full max-w-md px-6 py-6 text-center">
             <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              OpenClaw Studio
+              BiBoTM Studio
             </div>
             <div className="mt-3 text-sm text-muted-foreground">
               {status === "connecting" ? "Connecting to gateway…" : "Booting Studio…"}
@@ -1335,7 +1335,7 @@ const AgentStudioPage = () => {
         <div className="flex min-h-screen items-center justify-center px-6">
           <div className="glass-panel ui-panel w-full max-w-md px-6 py-6 text-center">
             <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              OpenClaw Studio
+              BiBoTM Studio
             </div>
             <div className="mt-3 text-sm text-muted-foreground">Loading agents…</div>
           </div>
@@ -1423,11 +1423,10 @@ const AgentStudioPage = () => {
                       <button
                         key={entry.id}
                         type="button"
-                        className={`relative w-full px-5 py-3 text-left text-sm transition ${
-                          active
+                        className={`relative w-full px-5 py-3 text-left text-sm transition ${active
                             ? "bg-surface-2/55 font-medium text-foreground"
                             : "font-normal text-muted-foreground hover:bg-surface-2/35 hover:text-foreground"
-                        }`}
+                          }`}
                         onClick={() => {
                           setSettingsSidebarItem(entry.id);
                           handleSettingsRouteTabChange(entry.id);
@@ -1483,8 +1482,8 @@ const AgentStudioPage = () => {
                                   : effectiveSettingsTab === "system"
                                     ? "system"
                                     : effectiveSettingsTab === "advanced"
-                                  ? "advanced"
-                                  : "capabilities"
+                                      ? "advanced"
+                                      : "capabilities"
                             }
                             showHeader={false}
                             agent={inspectSidebarAgent}

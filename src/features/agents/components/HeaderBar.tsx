@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { GatewayStatus } from "@/lib/gateway/GatewayClient";
-import { Plug } from "lucide-react";
+import { LogOut, Plug } from "lucide-react";
 import { resolveGatewayStatusBadgeClass } from "./colorSemantics";
 
 type HeaderBarProps = {
@@ -41,7 +41,7 @@ export const HeaderBar = ({
       <div className="grid h-10 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-3 sm:px-4 md:px-5">
         <div aria-hidden="true" />
         <p className="truncate text-sm font-semibold tracking-[0.01em] text-foreground">
-          OpenClaw Studio
+          BiBoTM Studio
         </p>
         <div className="flex items-center justify-end gap-1">
           {status === "connecting" ? (
@@ -79,6 +79,18 @@ export const HeaderBar = ({
                     data-testid="gateway-settings-toggle"
                   >
                     Gateway connection
+                  </button>
+                  <button
+                    className="ui-btn-ghost w-full justify-start gap-2 border-transparent px-3 py-2 text-left text-xs font-medium tracking-normal text-foreground"
+                    type="button"
+                    onClick={() => {
+                      document.cookie = "studio_access=; Path=/; Max-Age=0";
+                      window.location.href = "/login";
+                    }}
+                    data-testid="logout-button"
+                  >
+                    <LogOut className="h-3 w-3" />
+                    Logout
                   </button>
                 </div>
               ) : null}

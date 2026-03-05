@@ -39,8 +39,9 @@ async function main() {
   });
   const handle = app.getRequestHandler();
 
+  const gatewaySettings = loadUpstreamGatewaySettings(process.env);
   const accessGate = createAccessGate({
-    token: process.env.STUDIO_ACCESS_TOKEN,
+    token: process.env.STUDIO_ACCESS_TOKEN || gatewaySettings.token,
   });
 
   const proxy = createGatewayProxy({

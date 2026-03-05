@@ -24,6 +24,19 @@ const buildRedirectUrl = (req, nextPathWithQuery) => {
   return `${proto}://${host}${nextPathWithQuery}`;
 };
 
+const resolvePathname = (url) => {
+  const raw = typeof url === "string" ? url : "";
+  const idx = raw.indexOf("?");
+  return (idx === -1 ? raw : raw.slice(0, idx)) || "/";
+};
+
+/** Paths that bypass the access gate even when enabled. */
+const LOGIN_WHITELIST = new Set(["/login", "/api/auth/login"]);
+
+/** File-extension patterns that indicate a static asset request. */
+const isStaticAsset = (pathname) =>
+  /\.(?:js|css|ico|png|jpg|jpeg|svg|woff2?|ttf|map|json)$/i.test(pathname);
+
 function createAccessGate(options) {
   const token = String(options?.token ?? "").trim();
   const cookieName = String(options?.cookieName ?? "studio_access").trim() || "studio_access";
@@ -40,8 +53,29 @@ function createAccessGate(options) {
 
   const handleHttp = (req, res) => {
     if (!enabled) return false;
+
     const host = req.headers?.host || "localhost";
     const url = new URL(req.url || "/", `http://${host}`);
+    const pathname = url.pathname;
+
+    // Login API always passes through.
+    if (pathname === "/api/auth/login") return false;
+
+    // If user is already authenticated and visits /login, redirect to home.
+    if (pathname === "/login") {
+      if (isAuthorized(req)) {
+        res.statusCode = 302;
+        res.setHeader("Location", "/");
+        res.end();
+        return true;
+      }
+      return false;
+    }
+
+    // Allow Next.js internals and static assets through (they are not sensitive).
+    if (pathname.startsWith("/_next/")) return false;
+    if (isStaticAsset(pathname)) return false;
+
     const provided = url.searchParams.get(queryParam);
 
     if (provided !== null) {
@@ -75,6 +109,14 @@ function createAccessGate(options) {
       }
     }
 
+    // Non-API HTML requests: redirect to /login if not authorized.
+    if (!isAuthorized(req)) {
+      res.statusCode = 302;
+      res.setHeader("Location", "/login");
+      res.end();
+      return true;
+    }
+
     return false;
   };
 
@@ -87,4 +129,3 @@ function createAccessGate(options) {
 }
 
 module.exports = { createAccessGate };
-
