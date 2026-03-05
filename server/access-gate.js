@@ -41,8 +41,19 @@ function createAccessGate(options) {
   const token = String(options?.token ?? "").trim();
   const cookieName = String(options?.cookieName ?? "studio_access").trim() || "studio_access";
   const queryParam = String(options?.queryParam ?? "access_token").trim() || "access_token";
+  const allowQueryTokenBootstrap = process.env.ALLOW_QUERY_TOKEN_BOOTSTRAP === "true";
+  const maxAge = parseInt(process.env.COOKIE_MAX_AGE_SECONDS || "43200", 10); // 12h default
 
   const enabled = Boolean(token);
+
+  const buildCookieValue = (req) => {
+    const isSecure =
+      process.env.NODE_ENV === "production" ||
+      String(req.headers?.["x-forwarded-proto"] || "").toLowerCase() === "https";
+    let cookie = `${cookieName}=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${maxAge}`;
+    if (isSecure) cookie += "; Secure";
+    return cookie;
+  };
 
   const isAuthorized = (req) => {
     if (!enabled) return true;
@@ -79,17 +90,23 @@ function createAccessGate(options) {
     const provided = url.searchParams.get(queryParam);
 
     if (provided !== null) {
+      if (!allowQueryTokenBootstrap) {
+        res.statusCode = 403;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ error: "Query-token bootstrap is disabled." }));
+        return true;
+      }
+
       if (provided !== token) {
         res.statusCode = 401;
         res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ error: "Invalid Studio access token." }));
+        res.end(JSON.stringify({ error: "Invalid access token." }));
         return true;
       }
 
       url.searchParams.delete(queryParam);
-      const cookieValue = `${cookieName}=${token}; HttpOnly; Path=/; SameSite=Lax`;
       res.statusCode = 302;
-      res.setHeader("Set-Cookie", cookieValue);
+      res.setHeader("Set-Cookie", buildCookieValue(req));
       res.setHeader("Location", buildRedirectUrl(req, url.pathname + url.search));
       res.end();
       return true;
@@ -100,10 +117,7 @@ function createAccessGate(options) {
         res.statusCode = 401;
         res.setHeader("Content-Type", "application/json");
         res.end(
-          JSON.stringify({
-            error:
-              "Studio access token required. Open /?access_token=... once to set a cookie.",
-          })
+          JSON.stringify({ error: "Authentication required." })
         );
         return true;
       }

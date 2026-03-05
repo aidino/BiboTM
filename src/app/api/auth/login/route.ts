@@ -3,15 +3,16 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 /**
- * Resolve the gateway token server-side.
+ * Resolve the access token for Studio web auth.
  *
- * Priority:
- * 1. STUDIO_ACCESS_TOKEN env var
- * 2. Gateway token from openclaw studio settings / openclaw.json
+ * In production, only STUDIO_ACCESS_TOKEN is used (no gateway fallback).
+ * In development, falls back to the gateway token for convenience.
  */
 function resolveAccessToken(): string {
     const envToken = (process.env.STUDIO_ACCESS_TOKEN ?? "").trim();
     if (envToken) return envToken;
+
+    if (process.env.NODE_ENV === "production") return "";
 
     try {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -36,23 +37,27 @@ export async function POST(req: NextRequest) {
 
         if (!expectedToken) {
             return NextResponse.json(
-                { error: "No gateway token configured on this server." },
+                { error: "Authentication is not configured." },
                 { status: 500 }
             );
         }
 
         if (password !== expectedToken) {
-            return NextResponse.json({ error: "Invalid password." }, { status: 401 });
+            return NextResponse.json({ error: "Invalid credentials." }, { status: 401 });
         }
 
-        // Set the same cookie as access-gate.js so existing auth checks pass.
         const cookieName = "studio_access";
-        const cookieValue = `${cookieName}=${expectedToken}; HttpOnly; Path=/; SameSite=Lax`;
+        const maxAge = parseInt(process.env.COOKIE_MAX_AGE_SECONDS || "43200", 10);
+        const isSecure =
+            process.env.NODE_ENV === "production" ||
+            req.headers.get("x-forwarded-proto") === "https";
+        let cookieValue = `${cookieName}=${expectedToken}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${maxAge}`;
+        if (isSecure) cookieValue += "; Secure";
 
         const res = NextResponse.json({ ok: true });
         res.headers.set("Set-Cookie", cookieValue);
         return res;
     } catch {
-        return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+        return NextResponse.json({ error: "Invalid request." }, { status: 400 });
     }
 }
