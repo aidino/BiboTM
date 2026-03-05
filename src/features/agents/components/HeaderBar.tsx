@@ -83,8 +83,8 @@ export const HeaderBar = ({
                   <button
                     className="ui-btn-ghost w-full justify-start gap-2 border-transparent px-3 py-2 text-left text-xs font-medium tracking-normal text-foreground"
                     type="button"
-                    onClick={() => {
-                      document.cookie = "studio_access=; Path=/; Max-Age=0";
+                    onClick={async () => {
+                      await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
                       window.location.href = "/login";
                     }}
                     data-testid="logout-button"

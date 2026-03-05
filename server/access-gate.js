@@ -31,7 +31,7 @@ const resolvePathname = (url) => {
 };
 
 /** Paths that bypass the access gate even when enabled. */
-const LOGIN_WHITELIST = new Set(["/login", "/api/auth/login"]);
+const LOGIN_WHITELIST = new Set(["/login", "/api/auth/login", "/api/auth/logout"]);
 
 /** File-extension patterns that indicate a static asset request. */
 const isStaticAsset = (pathname) =>
@@ -69,8 +69,8 @@ function createAccessGate(options) {
     const url = new URL(req.url || "/", `http://${host}`);
     const pathname = url.pathname;
 
-    // Login API always passes through.
-    if (pathname === "/api/auth/login") return false;
+    // Auth APIs always pass through.
+    if (pathname === "/api/auth/login" || pathname === "/api/auth/logout") return false;
 
     // If user is already authenticated and visits /login, redirect to home.
     if (pathname === "/login") {
